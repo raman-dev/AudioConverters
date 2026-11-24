@@ -35,4 +35,37 @@
 
    flac converter 
    flac to mp3,wav,m4a 
+
+   flac_converter src -to mp3/m4a 
+   src should be file or folder	
+   if src is directory convert all flac to -to format 
+   out_(mp3|m4a)
+   use highest quality settings 
+
 #>
+
+param ( 
+	[string] $src,
+	[string] $to
+)
+
+
+if ($src -eq 0 -or (Test-Path $src) -eq $false){
+	write-host "Invalid src file or src directory"
+	exit
+}
+
+if ($to.length -eq 0){
+	write-host "No output format specified with -to [format]"
+	write-host "Valid formats=[mp3,m4a]"
+	exit
+}
+
+if ($to -eq "mp3" -and $to -eq "m4a") {
+	write-host "Invalid format specified"
+	exit
+}
+
+
+write-host "src: " + $src
+write-host $to
