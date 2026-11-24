@@ -43,10 +43,10 @@
    use highest quality settings 
 
 #>
-
+[CmdletBinding(PositionalBinding=$false)]
 param ( 
 	[string] $src,
-	[string] $to
+	[string] $out
 )
 
 
@@ -55,17 +55,38 @@ if ($src -eq 0 -or (Test-Path $src) -eq $false){
 	exit
 }
 
-if ($to.length -eq 0){
+if ($out.length -eq 0){
 	write-host "No output format specified with -to [format]"
 	write-host "Valid formats=[mp3,m4a]"
 	exit
 }
 
-if ($to -eq "mp3" -and $to -eq "m4a") {
-	write-host "Invalid format specified"
+if ($out -ne "mp3" -and $out -ne "m4a") {
+	write-host "Invalid output format specified"
 	exit
 }
 
 
-write-host "src: " + $src
-write-host $to
+write-host ("src: " + $src)
+write-host $out
+
+#if source is a file then output into same location but folder out_format/filename.out_format
+$isFile = (get-item $src).GetType() -ne [System.IO.DirectoryInfo]
+
+$outParent = (Split-Path -Path $src -Parent) +"out_" + $out
+Write-Host ("outParent: " + $outParent)
+
+if ($isFile -eq $true){
+	write-host "Src is a file!"
+	$file = get-item $src
+	$outFileName = $file.Name.substring(0,$file.Name.Length - 4) + $out
+}else {
+	$files = Get-ChildItem ($src+"\\*.flac")
+	foreach ($file in $files){
+		write-host ("found: " + $file.Name)
+		$outFileName = $file.Name.substring(0,$file.Name.Length - 4) + $out
+		$outFilePath = ($outParent + "\" + $outFileName)
+		#do conversion 
+		ffmpeg -i $file $outFilePath
+	}
+}
